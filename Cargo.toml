@@ -1,0 +1,15 @@
+[package]
+name = "actix-hello-world"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4"
+diesel = { version = "2.1", features = ["postgres", "r2d2", "uuid"] }  # for DB connection and ORM
+r2d2 = "0.8"
+serde = { version = "1.0.210", features = ["derive"] }
+uuid = { version = "1.10.0", features = ["v4", "serde"] }
+
+dotenv = "0.15"  # for environment variable management
+serde_json = "1.0"  # for handling JSON
+actix-rt = "2"  # for async runtime in actix-web
