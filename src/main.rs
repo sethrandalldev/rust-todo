@@ -33,6 +33,26 @@ async fn get_todos(pool: web::Data<DbPool>,) -> impl Responder {
     HttpResponse::Ok().json(results)
 }
 
+async fn get_todo(pool: web::Data<DbPool>, path: web::Path<uuid::Uuid>,) -> impl Responder {
+    use self::schema::todos::dsl::*;
+    let mut connection = pool.get().expect("couldn't get db connection from pool");
+
+    let todo_id = path.into_inner();
+
+    let results = todos
+        .filter(id.eq(todo_id))
+        .select(Todo::as_select())
+        .first(&mut connection)
+        .optional()
+        .expect("Error loading todos");
+
+    match results {
+        None => { HttpResponse::NotFound().body("Todo not found") }
+        Some(todo) => { HttpResponse::Ok().json(todo) }
+    }
+
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -44,7 +64,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(pool.clone()))
             .route("/", web::get().to(index))
             .route("/todos", web::get().to(get_todos))
-            // .route("/todos/{id}", web::get().to(get_todo))
+            .route("/todos/{id}", web::get().to(get_todo))
             // .route("/todos", web::post().to(create_todo))
             // .route("/todos/{id}", web::put().to(update_todo))
             // .route("/todos/{id}", web::delete().to(delete_todo))
