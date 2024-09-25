@@ -53,6 +53,24 @@ async fn get_todo(pool: web::Data<DbPool>, path: web::Path<uuid::Uuid>,) -> impl
 
 }
 
+async fn create_todo(pool: web::Data<DbPool>, item: web::Json<NewTodoRequest>,) -> impl Responder {
+    use self::schema::todos::dsl::*;
+    let mut connection = pool.get().expect("couldn't get db connection from pool");
+
+    let new_todo = NewTodo {
+        id: uuid::Uuid::new_v4(),
+        title: item.title.clone(),
+    };
+
+    diesel::insert_into(todos)
+        .values(&new_todo)
+        .execute(&mut connection)
+        .expect("Error saving new todo");
+
+    HttpResponse::Ok().body("Todo created")
+
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -65,7 +83,7 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(index))
             .route("/todos", web::get().to(get_todos))
             .route("/todos/{id}", web::get().to(get_todo))
-            // .route("/todos", web::post().to(create_todo))
+            .route("/todos", web::post().to(create_todo))
             // .route("/todos/{id}", web::put().to(update_todo))
             // .route("/todos/{id}", web::delete().to(delete_todo))
     })

@@ -12,8 +12,14 @@ pub struct Todo {
     pub completed: bool,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable, Deserialize)]
 #[diesel(table_name = todos)]
 pub struct NewTodo {
+    pub id: Uuid,
+    pub title: String,
+}
+
+#[derive(Deserialize)]
+pub struct NewTodoRequest {
     pub title: String,
 }
